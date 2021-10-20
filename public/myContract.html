@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Call Contract Methods using NEAR</title>
+    <script src="./lib/near-api-js.js"></script>
+    <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+      <div><a href="login.html">Account</a></div>
+      <div><a href="myContract.html">My Contract</a></div>
+      </div>
+    </nav>
+    <div class="container">
+    <br />
+    <!--button class="btn" id="read">Check Availability</button> <input class="input" type="text" id="read-key" placeholder="User" /-->
+    <br />
+    <h1>Power User Domains</h1>
+    <div class="container">
+      <input type="text" id="write-key" placeholder="Domain Name" /> <input type="text" id="write-value" placeholder="Address" />
+    </div>
+    <button class="btn" id="write">Claim Domain</button>
+    </div>
+    <script>
+      (async () => {
+        const { connect, keyStores, WalletConnection, Contract } = nearApi;
+
+        const CONTRACT_ID = 'dev-1634098284641-40067785396400';
+        const near = await connect(config());
+        const wallet = new WalletConnection(near, 'ncd-ii');
+        const account = await near.account("alysia.testnet");
+
+
+
+        accountDetails = await account.getAccountDetails();
+        console.log(accountDetails)
+        appsConnected = accountDetails.authorizedApps.length
+        const dom = setupDOMBindings();
+
+        const contract = new Contract(wallet.account(), CONTRACT_ID, {
+          viewMethods: ['helloWorld', 'read'],
+          changeMethods: ['write'],
+          sender: wallet.account()
+        });
+
+        if (wallet.isSignedIn()) {
+          
+          //dom.btnRead.addEventListener('click', async () => console.log(await contract.read({ key: dom.txtReadKey.value })));
+          dom.btnWrite.addEventListener('click', async () => {
+            if(appsConnected>3){
+              console.log(`You can claim, you have connected to ${appsConnected} apps`)
+              console.log(await contract.write({ key: dom.txtWriteKey.value, value: dom.txtWriteValue.value }))
+
+            }
+          });
+          
+        }
+
+        function config() {
+          return {
+            networkId: 'testnet',
+            keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+            nodeUrl: 'https://rpc.testnet.near.org',
+            walletUrl: 'https://wallet.testnet.near.org',
+            helperUrl: 'https://helper.testnet.near.org',
+            explorerUrl: 'https://explorer.testnet.near.org'
+          };
+        }
+
+        function setupDOMBindings() {
+          return {
+            btnHello: document.querySelector('#hello'),
+            btnRead: document.querySelector('#read'),
+            txtReadKey: document.querySelector('#read-key'),
+            btnWrite: document.querySelector('#write'),
+            txtWriteKey: document.querySelector('#write-key'),
+            txtWriteValue: document.querySelector('#write-value')
+          };
+        }
+      })();
+    </script>
+  </body>
+</html>
